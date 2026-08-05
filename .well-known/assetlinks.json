@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "io.github.summermorning123.badukapp",
+    "sha256_cert_fingerprints": ["8C:3F:F2:12:D1:6E:A4:C1:B4:AE:02:47:5E:0C:21:F0:F9:99:5F:A5:84:62:DC:A7:C3:E9:ED:39:FB:AF:0D:9E"]
+  }
+}]

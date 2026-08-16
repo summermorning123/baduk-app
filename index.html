@@ -188,6 +188,7 @@
   }
   .empty b{color:var(--ink);}
   .listhint{text-align:center; color:var(--muted); font-size:.75rem; padding:4px 0 0;}
+  .listhint.tight{white-space:pre-line; line-height:1.35; padding-top:7px;}
   .backup{display:flex; justify-content:center; flex-wrap:wrap; gap:8px; padding:8px 0 12px;}
   .backup button{
     background:var(--surface2); border:1px solid var(--line); border-radius:9px;
@@ -589,7 +590,7 @@
     backup_saved:"백업 파일을 저장했습니다 (다운로드 폴더)",
     sample_folder:"명국",
     coord_show:"바둑판 좌표 표시",
-    list_hint2:"브라우저의 쿠키·사이트 데이터를 삭제하면 정석도 함께 삭제됩니다. 백업 내보내기로 파일을 보관해 두세요",
+    list_hint2:"브라우저의 쿠키·사이트 데이터를 삭제하면 정석도 함께 삭제됩니다.\n백업 내보내기로 파일을 보관해 두세요",
     lang_title:"언어 / Language"
   },
   en: {
@@ -668,7 +669,7 @@
     backup_saved:"Backup file saved (Downloads folder)",
     sample_folder:"Famous games",
     coord_show:"Show board coordinates",
-    list_hint2:"Clearing the browser's cookies & site data also deletes your joseki. Keep a backup file with Export.",
+    list_hint2:"Clearing the browser's cookies & site data also deletes your joseki.\nKeep a backup file with Export.",
     lang_title:"Language"
   },
   ja: {
@@ -747,7 +748,7 @@
     backup_saved:"バックアップを保存しました（ダウンロード）",
     sample_folder:"名局",
     coord_show:"盤面の座標を表示",
-    list_hint2:"ブラウザのCookie・サイトデータを削除すると定石も消えます。バックアップ書き出しでファイルを保管してください",
+    list_hint2:"ブラウザのCookie・サイトデータを削除すると定石も消えます。\nバックアップ書き出しでファイルを保管してください",
     lang_title:"言語"
   },
   zh: {
@@ -826,7 +827,7 @@
     backup_saved:"备份文件已保存（下载文件夹）",
     sample_folder:"名局",
     coord_show:"显示棋盘坐标",
-    list_hint2:"清除浏览器的Cookie和网站数据会同时删除定式。请用导出备份保存文件",
+    list_hint2:"清除浏览器的Cookie和网站数据会同时删除定式。\n请用导出备份保存文件",
     lang_title:"语言"
   }
   };
@@ -1823,7 +1824,7 @@
     hint.textContent = t("list_hint");
     box.appendChild(hint);
     var hint2 = document.createElement("div");
-    hint2.className = "listhint";
+    hint2.className = "listhint tight";
     hint2.textContent = t("list_hint2");
     box.appendChild(hint2);
   }
@@ -2649,6 +2650,15 @@
   var SAMPLE_SGF = "(;GM[1]FF[4]CA[UTF-8]SZ[19]GN[Lee Sedol vs AlphaGo Game 4];B[pd];W[dp];B[cd];W[qp];B[op];W[oq];B[nq];W[pq];B[cn];W[fq];B[mp];W[po];B[iq];W[ec];B[hd];W[cg];B[ed];W[cj];B[dc];W[bp];B[nc];W[qi];B[ep];W[eo];B[dk];W[fp];B[ck];W[dj];B[ej];W[ei];B[fi];W[eh];B[fh];W[bj];B[fk];W[fg];B[gg];W[ff];B[gf];W[mc];B[md];W[lc];B[nb];W[id];B[hc];W[jg];B[pj];W[pi];B[oj];W[oi];B[ni];W[nh];B[mh];W[ng];B[mg];W[mi];B[nj];W[mf];B[li];W[ne];B[nd];W[mj];B[lf];W[mk];B[me];W[nf];B[lh];W[qj];B[kk];W[ik];B[ji];W[gh];B[hj];W[ge];B[he];W[fd];B[fc];W[ki];B[jj];W[lj];B[kh];W[jh];B[ml];W[nk];B[ol];W[ok];B[pk];W[pl];B[qk];W[nl];B[kj];W[ii];B[rk];W[om];B[pg];W[ql];B[cp];W[co];B[oe];W[rl];B[sk];W[rj];B[hg];W[ij];B[km];W[gi];B[fj];W[jl];B[kl];W[gl];B[fl];W[gm];B[ch];W[ee];B[eb];W[bg];B[dg];W[eg];B[en];W[fo];B[df];W[dh];B[im];W[hk];B[bn];W[if];B[gd];W[fe];B[hf];W[ih];B[bh];W[ci];B[ho];W[go];B[or];W[rg];B[dn];W[cq];B[pr];W[qr];B[rf];W[qg];B[qf];W[jc];B[gr];W[sf];B[se];W[sg];B[rd];W[bl];B[bk];W[ak];B[cl];W[hn];B[in];W[hp];B[fr];W[er];B[es];W[ds];B[ah];W[ai];B[kd];W[ie];B[kc];W[kb];B[gk];W[ib];B[qh];W[rh];B[qs];W[rs];B[oh];W[sl];B[of];W[sj];B[ni];W[nj];B[oo];W[jp])";
 
   function loadSampleOnce(){
+    // 기존 설치자의 샘플 이름을 새 표기로 갱신
+    var list0 = loadAll(), renamed = false;
+    list0.forEach(function(it){
+      if(it.name === "이세돌 vs AlphaGo 제4국 (2016)"){
+        it.name = "이세돌 vs AlphaGo 제4국 (sample)";
+        renamed = true;
+      }
+    });
+    if(renamed) saveAll(list0);
     if(prefs.sampleLoaded) return;
     prefs.sampleLoaded = true; savePrefs();
     try{
@@ -2660,7 +2670,7 @@
       var list = loadAll();
       list.push({
         id: Date.now(), mtime: Date.now(),
-        name: "이세돌 vs AlphaGo 제4국 (2016)",
+        name: "이세돌 vs AlphaGo 제4국 (sample)",
         firstColor: r.firstColor, moves: r.moves, folder: fname
       });
       saveAll(list);

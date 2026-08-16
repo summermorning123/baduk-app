@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>바둑정석암기</title>
 <style>
   :root{
@@ -325,6 +325,25 @@
   }
   .toast.show{opacity:1;}
 
+  /* 엣지투엣지(Android 15+) 안전 영역 */
+  .app{padding-left:env(safe-area-inset-left); padding-right:env(safe-area-inset-right);}
+  header.top{padding-top:calc(14px + env(safe-area-inset-top));}
+
+  /* 좌표 라벨 */
+  .coord-label{font-weight:600; pointer-events:none; user-select:none;}
+
+  /* 범위 힌트 */
+  .hint-area{
+    fill:var(--good); fill-opacity:.13; stroke:var(--good);
+    stroke-width:2.5; stroke-dasharray:6 5;
+    animation:pulse 1.1s ease-in-out infinite; pointer-events:none;
+  }
+
+  /* 바둑판 색상 견본 */
+  .swatchrow{display:flex; gap:10px; flex-wrap:wrap;}
+  .swatch{width:46px; height:46px; border-radius:10px; border:2.5px solid var(--line); padding:0;}
+  .swatch.on{border-color:var(--accent); box-shadow:0 0 0 2px var(--accent);}
+
   button:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
 </style>
 </head>
@@ -535,7 +554,9 @@
     review_as_black:"흑으로 복습", review_as_white:"백으로 복습", random_tag:"랜덤",
     your_turn_fmt:"내 차례입니다 — {0}번째 수를 두세요", opp_playing:"상대가 두는 중…",
     correct:"정확합니다!", wrong:"❌ 틀렸습니다. 다른 자리를 생각해 보세요.",
-    hint_shown:"초록 표시 자리가 다음 수입니다", opp_turn_toast:"상대 차례입니다",
+    hint_shown:"다음 수는 초록 원 안에 있습니다", opp_turn_toast:"상대 차례입니다",
+    reveal_title:"답을 보시겠습니까?", reveal_body:"이 수를 3번 틀렸습니다. 정답 위치를 표시할까요?",
+    btn_show:"답 보기", reveal_shown:"정답 위치를 표시했습니다",
     hint_btn:"💡 다음 수 힌트", miss_fmt:"틀린 횟수 {0}", prog_fmt:"{0} / {1}수", back_btn:"← 목록",
     done_review:"🎉 복습 완료!", done_perfect:"한 번도 틀리지 않았습니다. 완벽하게 외웠네요!",
     done_missed_fmt:"총 {0}수 중 {1}번 틀렸습니다.", to_list:"목록으로", again_review:"다시 복습",
@@ -555,6 +576,12 @@
     backup_import_desc:"내보내기로 복사해 둔 내용을 붙여넣으세요. 기존 목록에 추가됩니다.",
     backup_none:"가져올 정석이 없습니다", backup_ok_fmt:"{0}개 정석을 가져왔습니다", backup_bad:"형식이 올바르지 않습니다",
     zoom_full:"전체", zoom_tl:"↖ 좌상", zoom_tr:"↗ 우상", zoom_bl:"↙ 좌하", zoom_br:"↘ 우하",
+    settings_title:"설정", lang_label:"언어", board_label:"바둑판 색상",
+    th_wood:"기본 나무", th_dark:"진한 나무", th_pale:"밝은 나무", th_green:"초록", th_slate:"슬레이트",
+    menu_share:"📤 공유", share_title:"공유 형식", share_sgf:"SGF 파일", share_png:"이미지 (PNG)", share_txt:"텍스트 (TXT)",
+    share_saved_fmt:"파일로 저장했습니다: {0}",
+    backup_saved:"백업 파일을 저장했습니다 (다운로드 폴더)",
+    sample_folder:"명국",
     lang_title:"언어 / Language"
   },
   en: {
@@ -604,7 +631,9 @@
     review_as_black:"Play Black", review_as_white:"Play White", random_tag:"Random",
     your_turn_fmt:"Your turn — play move {0}", opp_playing:"Opponent is playing…",
     correct:"Correct!", wrong:"❌ Wrong. Try another point.",
-    hint_shown:"The green mark is the next move", opp_turn_toast:"It's the opponent's turn",
+    hint_shown:"The next move is inside the green circle", opp_turn_toast:"It's the opponent's turn",
+    reveal_title:"Show the answer?", reveal_body:"You've missed this move 3 times. Reveal the exact point?",
+    btn_show:"Show answer", reveal_shown:"The answer is marked on the board",
     hint_btn:"💡 Hint", miss_fmt:"Mistakes: {0}", prog_fmt:"{0} / {1}", back_btn:"← List",
     done_review:"🎉 Review complete!", done_perfect:"No mistakes — perfectly memorized!",
     done_missed_fmt:"{1} mistakes over {0} moves.", to_list:"Back to list", again_review:"Review again",
@@ -624,6 +653,12 @@
     backup_import_desc:"Paste a previously exported backup. Items are added to your list.",
     backup_none:"Nothing to import", backup_ok_fmt:"Imported {0} joseki", backup_bad:"Invalid format",
     zoom_full:"Full", zoom_tl:"↖ TL", zoom_tr:"↗ TR", zoom_bl:"↙ BL", zoom_br:"↘ BR",
+    settings_title:"Settings", lang_label:"Language", board_label:"Board color",
+    th_wood:"Classic wood", th_dark:"Dark wood", th_pale:"Pale wood", th_green:"Green", th_slate:"Slate",
+    menu_share:"📤 Share", share_title:"Share as", share_sgf:"SGF file", share_png:"Image (PNG)", share_txt:"Text (TXT)",
+    share_saved_fmt:"Saved as file: {0}",
+    backup_saved:"Backup file saved (Downloads folder)",
+    sample_folder:"Famous games",
     lang_title:"Language"
   },
   ja: {
@@ -673,7 +708,9 @@
     review_as_black:"黒で復習", review_as_white:"白で復習", random_tag:"ランダム",
     your_turn_fmt:"あなたの番です — {0}手目を打ってください", opp_playing:"相手が打っています…",
     correct:"正解！", wrong:"❌ 違います。別の場所を考えてみましょう。",
-    hint_shown:"緑の印が次の一手です", opp_turn_toast:"相手の番です",
+    hint_shown:"次の一手は緑の円の中にあります", opp_turn_toast:"相手の番です",
+    reveal_title:"正解を表示しますか？", reveal_body:"この手を3回間違えました。正解の位置を表示しますか？",
+    btn_show:"正解を見る", reveal_shown:"正解の位置を表示しました",
     hint_btn:"💡 次の一手ヒント", miss_fmt:"ミス {0}回", prog_fmt:"{0} / {1}手", back_btn:"← 一覧",
     done_review:"🎉 復習完了！", done_perfect:"ノーミス！完璧に覚えています！",
     done_missed_fmt:"全{0}手中{1}回ミスしました。", to_list:"一覧へ", again_review:"もう一度復習",
@@ -693,6 +730,12 @@
     backup_import_desc:"書き出した内容を貼り付けてください。既存の一覧に追加されます。",
     backup_none:"読み込む定石がありません", backup_ok_fmt:"{0}個の定石を読み込みました", backup_bad:"形式が正しくありません",
     zoom_full:"全体", zoom_tl:"↖ 左上", zoom_tr:"↗ 右上", zoom_bl:"↙ 左下", zoom_br:"↘ 右下",
+    settings_title:"設定", lang_label:"言語", board_label:"盤の色",
+    th_wood:"標準の木目", th_dark:"濃い木目", th_pale:"明るい木目", th_green:"緑", th_slate:"スレート",
+    menu_share:"📤 共有", share_title:"共有形式", share_sgf:"SGFファイル", share_png:"画像 (PNG)", share_txt:"テキスト (TXT)",
+    share_saved_fmt:"ファイルに保存しました：{0}",
+    backup_saved:"バックアップを保存しました（ダウンロード）",
+    sample_folder:"名局",
     lang_title:"言語"
   },
   zh: {
@@ -742,7 +785,9 @@
     review_as_black:"执黑复习", review_as_white:"执白复习", random_tag:"随机",
     your_turn_fmt:"轮到你了 — 请下第{0}手", opp_playing:"对方落子中…",
     correct:"正确！", wrong:"❌ 错了，请再想想别的位置。",
-    hint_shown:"绿色标记处是下一手", opp_turn_toast:"现在是对方回合",
+    hint_shown:"下一手在绿圈范围内", opp_turn_toast:"现在是对方回合",
+    reveal_title:"要查看答案吗？", reveal_body:"这手棋已错了3次。要显示正确位置吗？",
+    btn_show:"查看答案", reveal_shown:"已显示正确位置",
     hint_btn:"💡 下一手提示", miss_fmt:"出错{0}次", prog_fmt:"{0} / {1}手", back_btn:"← 列表",
     done_review:"🎉 复习完成！", done_perfect:"一次都没错，记得很牢！",
     done_missed_fmt:"共{0}手，出错{1}次。", to_list:"返回列表", again_review:"再次复习",
@@ -762,6 +807,12 @@
     backup_import_desc:"粘贴之前导出的内容，将添加到现有列表。",
     backup_none:"没有可导入的定式", backup_ok_fmt:"已导入{0}个定式", backup_bad:"格式不正确",
     zoom_full:"全盘", zoom_tl:"↖ 左上", zoom_tr:"↗ 右上", zoom_bl:"↙ 左下", zoom_br:"↘ 右下",
+    settings_title:"设置", lang_label:"语言", board_label:"棋盘颜色",
+    th_wood:"经典木色", th_dark:"深木色", th_pale:"浅木色", th_green:"绿色", th_slate:"石板灰",
+    menu_share:"📤 分享", share_title:"分享格式", share_sgf:"SGF文件", share_png:"图片 (PNG)", share_txt:"文本 (TXT)",
+    share_saved_fmt:"已保存为文件：{0}",
+    backup_saved:"备份文件已保存（下载文件夹）",
+    sample_folder:"名局",
     lang_title:"语言"
   }
   };
@@ -802,9 +853,11 @@
       return {
         folder: (typeof p.folder === "string" ? p.folder : "all"),
         sort: p.sort || "new",
-        lang: (L[p.lang] ? p.lang : "ko")
+        lang: (L[p.lang] ? p.lang : "ko"),
+        boardTheme: p.boardTheme || "wood",
+        sampleLoaded: !!p.sampleLoaded
       };
-    }catch(e){ return { folder:"all", sort:"new", lang:"ko" }; }
+    }catch(e){ return { folder:"all", sort:"new", lang:"ko", boardTheme:"wood", sampleLoaded:false }; }
   })();
   function savePrefs(){ localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); }
 
@@ -863,6 +916,31 @@
     bl:[0,190,410,410], br:[190,190,410,410]
   };
   var VIEW_KEYS = ["full","tl","tr","bl","br"];
+
+  /* 바둑판 색상 테마 */
+  var BOARD_THEMES = {
+    wood:  { bg1:"#E4B75F", bg2:"#CE9E45", line:"#5A4520", wrap:"#D2A24A" },
+    dark:  { bg1:"#C08A45", bg2:"#9C6B2E", line:"#3A290F", wrap:"#A9763A" },
+    pale:  { bg1:"#F3E2BC", bg2:"#E8D09E", line:"#6B5A34", wrap:"#EBD5A6" },
+    green: { bg1:"#9CB877", bg2:"#84A25E", line:"#2F3D1C", wrap:"#8CA968" },
+    slate: { bg1:"#D8D8D2", bg2:"#C2C2BA", line:"#3E3E38", wrap:"#C9C9C1" }
+  };
+
+  /* 좌표 라벨: 한/중/일 = 가로 1~19, 세로 一~十九 · 영어 = A~T(I 제외), 19~1 */
+  function coordSets(){
+    var i;
+    if(prefs.lang === "en"){
+      var cols = "ABCDEFGHJKLMNOPQRST".split("");
+      var rows = [];
+      for(i=0;i<19;i++) rows.push(String(19-i));
+      return { cols: cols, rows: rows };
+    }
+    var nums = [];
+    for(i=0;i<19;i++) nums.push(String(i+1));
+    var cjk = ["一","二","三","四","五","六","七","八","九","十",
+               "十一","十二","十三","十四","十五","十六","十七","十八","十九"];
+    return { cols: nums, rows: cjk };
+  }
 
   function el(tag, attrs){
     var e = document.createElementNS(SVGNS, tag);
@@ -936,8 +1014,10 @@
     return a;
   }
 
-  function makeBoard(mount, onTap){
+  var BOARDS = [];
+  function makeBoard(mount, onTap, onUserZoom){
     var svg = el("svg", {viewBox:"0 0 600 600"});
+    svg.style.touchAction = "none";
 
     var defs = el("defs", {});
     defs.innerHTML =
@@ -948,6 +1028,7 @@
       '<radialGradient id="gw'+mount.id+'" cx="0.35" cy="0.3" r="0.9">' +
       '<stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#D8D8D8"/></radialGradient>';
     svg.appendChild(defs);
+    var bgStops = defs.querySelectorAll("linearGradient stop");
     svg.appendChild(el("rect",{x:0,y:0,width:600,height:600,fill:"url(#wood"+mount.id+")"}));
 
     var grid = el("g",{stroke:"#5A4520","stroke-width":"1"});
@@ -966,6 +1047,9 @@
     });
     svg.appendChild(stars);
 
+    var gLabels = el("g",{fill:"#5A4520","font-size":"10.5","text-anchor":"middle","class":"coord-label"});
+    svg.appendChild(gLabels);
+
     var gStones = el("g",{});
     var gFx = el("g",{});
     svg.appendChild(gStones);
@@ -975,17 +1059,89 @@
     var boardId = mount.id;
     var hintEl = null, ghostEl = null;
 
-    svg.addEventListener("pointerdown", function(e){
-      if(!onTap) return;
+    function getVB(){ var v = svg.viewBox.baseVal; return {x:v.x, y:v.y, w:v.width}; }
+    function setVB(x, y, w){
+      w = Math.max(150, Math.min(600, w));
+      x = Math.max(0, Math.min(600 - w, x));
+      y = Math.max(0, Math.min(600 - w, y));
+      svg.setAttribute("viewBox", x + " " + y + " " + w + " " + w);
+    }
+    function clientToSvg(cx, cy){
       var pt = svg.createSVGPoint();
-      pt.x = e.clientX; pt.y = e.clientY;
+      pt.x = cx; pt.y = cy;
       var m = svg.getScreenCTM();
-      if(!m) return;
-      var p = pt.matrixTransform(m.inverse());
-      var i = Math.round((p.x - M)/CELL), j = Math.round((p.y - M)/CELL);
-      if(i<0||i>18||j<0||j>18) return;
-      onTap(i,j);
+      return m ? pt.matrixTransform(m.inverse()) : null;
+    }
+
+    /* 제스처: 탭=착점 · 두 손가락 핀치=확대/축소 · 확대 중 드래그=이동 · 마우스 휠=확대 */
+    var ptrs = new Map(), pinch = null, tap = null, movedFar = false;
+    svg.addEventListener("pointerdown", function(e){
+      try{ svg.setPointerCapture(e.pointerId); }catch(err){}
+      ptrs.set(e.pointerId, {x:e.clientX, y:e.clientY});
+      if(ptrs.size === 1){
+        tap = { id:e.pointerId, x:e.clientX, y:e.clientY };
+        movedFar = false;
+      }else if(ptrs.size === 2){
+        tap = null;
+        var a = Array.from(ptrs.values());
+        pinch = {
+          d: Math.hypot(a[0].x-a[1].x, a[0].y-a[1].y),
+          midS: clientToSvg((a[0].x+a[1].x)/2, (a[0].y+a[1].y)/2),
+          w: getVB().w
+        };
+      }
     });
+    svg.addEventListener("pointermove", function(e){
+      var p = ptrs.get(e.pointerId);
+      if(!p) return;
+      var prevX = p.x, prevY = p.y;
+      p.x = e.clientX; p.y = e.clientY;
+      var rect = svg.getBoundingClientRect();
+      if(ptrs.size === 2 && pinch && pinch.midS){
+        var a = Array.from(ptrs.values());
+        var d = Math.hypot(a[0].x-a[1].x, a[0].y-a[1].y);
+        if(d < 12) return;
+        var w = Math.max(150, Math.min(600, pinch.w * (pinch.d / d)));
+        var fx = ((a[0].x+a[1].x)/2 - rect.left) / rect.width;
+        var fy = ((a[0].y+a[1].y)/2 - rect.top) / rect.height;
+        setVB(pinch.midS.x - fx*w, pinch.midS.y - fy*w, w);
+        if(onUserZoom) onUserZoom();
+      }else if(ptrs.size === 1 && tap && e.pointerId === tap.id){
+        if(Math.abs(e.clientX - tap.x) + Math.abs(e.clientY - tap.y) > 10) movedFar = true;
+        var vb = getVB();
+        if(movedFar && vb.w < 599){
+          var s = vb.w / rect.width;
+          setVB(vb.x - (e.clientX - prevX)*s, vb.y - (e.clientY - prevY)*s, vb.w);
+          if(onUserZoom) onUserZoom();
+        }
+      }
+    });
+    function endPtr(e){
+      var isTap = (e.type === "pointerup") && tap && e.pointerId === tap.id && !movedFar && ptrs.size === 1;
+      ptrs.delete(e.pointerId);
+      if(ptrs.size < 2) pinch = null;
+      if(tap && e.pointerId === tap.id) tap = null;
+      if(isTap && onTap){
+        var pos = clientToSvg(e.clientX, e.clientY);
+        if(!pos) return;
+        var ti = Math.round((pos.x - M)/CELL), tj = Math.round((pos.y - M)/CELL);
+        if(ti<0||ti>18||tj<0||tj>18) return;
+        onTap(ti,tj);
+      }
+    }
+    svg.addEventListener("pointerup", endPtr);
+    svg.addEventListener("pointercancel", endPtr);
+    svg.addEventListener("wheel", function(e){
+      e.preventDefault();
+      var vb = getVB();
+      var pos = clientToSvg(e.clientX, e.clientY);
+      if(!pos) return;
+      var rect = svg.getBoundingClientRect();
+      var w = Math.max(150, Math.min(600, vb.w * (e.deltaY > 0 ? 1.15 : 0.87)));
+      setVB(pos.x - ((e.clientX - rect.left)/rect.width)*w,
+            pos.y - ((e.clientY - rect.top)/rect.height)*w, w);
+      if(onUserZoom) onUserZoom();
+    }, {passive:false});
 
     function stoneG(i,j,color,num){
       var g = el("g",{});
@@ -1008,10 +1164,31 @@
       return g;
     }
 
-    return {
+    var api = {
       setView: function(name){
         var v = VIEWS[name] || VIEWS.full;
         svg.setAttribute("viewBox", v.join(" "));
+      },
+      updateTheme: function(key){
+        var th = BOARD_THEMES[key] || BOARD_THEMES.wood;
+        if(bgStops.length >= 2){
+          bgStops[0].setAttribute("stop-color", th.bg1);
+          bgStops[1].setAttribute("stop-color", th.bg2);
+        }
+        grid.setAttribute("stroke", th.line);
+        stars.setAttribute("fill", th.line);
+        gLabels.setAttribute("fill", th.line);
+        mount.style.background = th.wrap;
+      },
+      updateLabels: function(){
+        gLabels.innerHTML = "";
+        var cs = coordSets();
+        for(var k=0;k<19;k++){
+          var t1 = el("text",{x:px(k), y:14}); t1.textContent = cs.cols[k]; gLabels.appendChild(t1);
+          var t2 = el("text",{x:px(k), y:SIZE-6}); t2.textContent = cs.cols[k]; gLabels.appendChild(t2);
+          var t3 = el("text",{x:13, y:px(k)+3.5}); t3.textContent = cs.rows[k]; gLabels.appendChild(t3);
+          var t4 = el("text",{x:SIZE-13, y:px(k)+3.5}); t4.textContent = cs.rows[k]; gLabels.appendChild(t4);
+        }
       },
       render: function(moves, firstColor, lastIdx){
         gStones.innerHTML = "";
@@ -1048,6 +1225,11 @@
         hintEl = el("circle",{cx:px(i),cy:px(j),r:15,"class":"hint-ring"});
         gFx.appendChild(hintEl);
       },
+      hintArea: function(i,j,dx,dy){
+        this.clearHint();
+        hintEl = el("circle",{cx:px(i)+(dx||0), cy:px(j)+(dy||0), r:66, "class":"hint-area"});
+        gFx.appendChild(hintEl);
+      },
       clearHint: function(){
         if(hintEl){ hintEl.remove(); hintEl = null; }
       },
@@ -1060,6 +1242,14 @@
         setTimeout(function(){ g.remove(); }, 1000);
       }
     };
+    api.updateTheme(prefs.boardTheme);
+    api.updateLabels();
+    BOARDS.push(api);
+    return api;
+  }
+
+  function applyBoardTheme(){
+    BOARDS.forEach(function(b){ b.updateTheme(prefs.boardTheme); });
   }
 
   function buildZoomSeg(mount, onChange){
@@ -1125,7 +1315,7 @@
   var editingId = null;
   var editingName = "";
   var editingFolder = "";
-  var inputBoard = makeBoard($("inputBoardWrap"), onInputTap);
+  var inputBoard = makeBoard($("inputBoardWrap"), onInputTap, function(){ inputZoom.set(null); });
   var inputZoom = buildZoomSeg($("inputZoom"), function(v){ inputBoard.setView(v); });
 
   function inCurColor(){
@@ -1366,14 +1556,16 @@
       var b1 = document.createElement("button"); b1.textContent=t("menu_rename");
       var b2 = document.createElement("button"); b2.textContent=t("menu_edit");
       var b5 = document.createElement("button"); b5.textContent=t("menu_folder");
+      var b6 = document.createElement("button"); b6.textContent=t("menu_share");
       var b3 = document.createElement("button"); b3.textContent=t("btn_delete"); b3.className="danger";
       var b4 = document.createElement("button"); b4.textContent=t("btn_close"); b4.className="quiet";
       b1.onclick = function(){ close(); renameItem(item); };
       b2.onclick = function(){ close(); startEdit(item); };
       b5.onclick = function(){ close(); moveFolderModal(item); };
+      b6.onclick = function(){ close(); shareModal(item); };
       b3.onclick = function(){ close(); confirmDelete(item); };
       b4.onclick = close;
-      ml.appendChild(b1); ml.appendChild(b2); ml.appendChild(b5); ml.appendChild(b3); ml.appendChild(b4);
+      ml.appendChild(b1); ml.appendChild(b2); ml.appendChild(b5); ml.appendChild(b6); ml.appendChild(b3); ml.appendChild(b4);
       box.appendChild(ml);
     });
   }
@@ -1641,22 +1833,19 @@
   /* ===================== 백업 ===================== */
   $("btnExport").addEventListener("click", function(){
     var data = JSON.stringify(loadAll());
-    function fallback(){
-      showModal(function(box, close){
-        box.innerHTML = '<h2></h2><div class="mbody"><div class="mdesc"></div></div>';
-        box.querySelector("h2").textContent = t("backup_title");
-        box.querySelector(".mdesc").textContent = t("backup_copy_hint");
-        var ta = document.createElement("textarea"); ta.value = data; ta.readOnly = true;
-        box.querySelector(".mbody").appendChild(ta);
-        var btns = document.createElement("div"); btns.className="mbtns";
-        var c = document.createElement("button"); c.textContent=t("btn_close"); c.onclick=close;
-        btns.appendChild(c); box.appendChild(btns);
-        ta.onclick = function(){ ta.select(); };
-      });
-    }
+    var d = new Date();
+    var two = function(n){ return (n<10?"0":"")+n; };
+    var fname = "baduk-backup-" + d.getFullYear() + "-" + two(d.getMonth()+1) + "-" + two(d.getDate()) + ".json";
+    var blob = new Blob([data], {type:"application/json"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = fname;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 3000);
     if(navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(data).then(function(){ toast(t("backup_copied")); }, fallback);
-    }else fallback();
+      navigator.clipboard.writeText(data).catch(function(){});
+    }
+    toast(t("backup_saved"));
   });
 
   $("btnImport").addEventListener("click", function(){
@@ -1664,8 +1853,24 @@
       box.innerHTML = '<h2></h2><div class="mbody"><div class="mdesc"></div></div>';
       box.querySelector("h2").textContent = t("backup_import");
       box.querySelector(".mdesc").textContent = t("backup_import_desc");
+      var fileLbl = document.createElement("label");
+      fileLbl.className = "ghostbtn";
+      fileLbl.style.textAlign = "center";
+      fileLbl.textContent = "📄 baduk-backup-*.json";
+      var fileInp = document.createElement("input");
+      fileInp.type = "file"; fileInp.accept = ".json,.txt";
+      fileInp.style.display = "none";
+      fileLbl.appendChild(fileInp);
+      box.querySelector(".mbody").appendChild(fileLbl);
       var ta = document.createElement("textarea"); ta.placeholder="[ ... ]";
       box.querySelector(".mbody").appendChild(ta);
+      fileInp.addEventListener("change", function(){
+        var f = fileInp.files[0];
+        if(!f) return;
+        var rd = new FileReader();
+        rd.onload = function(){ ta.value = rd.result; };
+        rd.readAsText(f);
+      });
       var btns = document.createElement("div"); btns.className="mbtns";
       var c1 = document.createElement("button"); c1.textContent=t("btn_cancel"); c1.onclick=close;
       var c2 = document.createElement("button"); c2.textContent=t("btn_import"); c2.className="acc";
@@ -1881,13 +2086,138 @@
     });
   });
 
+  /* ===================== 공유 (SGF / PNG / TXT) ===================== */
+  var COL_LETTERS = "ABCDEFGHJKLMNOPQRST";
+
+  function itemToSGF(item){
+    var s = "(;GM[1]FF[4]CA[UTF-8]SZ[19]GN[" + item.name.replace(/\\/g,"\\\\").replace(/\]/g,"\\]") + "]";
+    for(var k=0;k<item.moves.length;k++){
+      var c = (k%2===0) ? item.firstColor : (item.firstColor==="B"?"W":"B");
+      s += ";" + c + "[" +
+        String.fromCharCode(97 + item.moves[k][0]) +
+        String.fromCharCode(97 + item.moves[k][1]) + "]";
+    }
+    return s + ")";
+  }
+
+  function itemToTXT(item){
+    var lines = [item.name,
+      tf("total_fmt", item.moves.length, tf("first_fmt", colorName(item.firstColor))), ""];
+    for(var k=0;k<item.moves.length;k++){
+      var c = (k%2===0) ? item.firstColor : (item.firstColor==="B"?"W":"B");
+      lines.push((k+1) + ". " + colorName(c) + " " +
+        COL_LETTERS[item.moves[k][0]] + (19 - item.moves[k][1]));
+    }
+    return lines.join("\r\n");
+  }
+
+  function itemToPNG(item, cb){
+    var S = 40, MG = 40, W = S*18 + MG*2;
+    var cv = document.createElement("canvas");
+    cv.width = W; cv.height = W;
+    var ctx = cv.getContext("2d");
+    var th = BOARD_THEMES[prefs.boardTheme] || BOARD_THEMES.wood;
+    var gr = ctx.createLinearGradient(0,0,W,W);
+    gr.addColorStop(0, th.bg1); gr.addColorStop(1, th.bg2);
+    ctx.fillStyle = gr; ctx.fillRect(0,0,W,W);
+    ctx.strokeStyle = th.line; ctx.lineWidth = 1.2;
+    var k, x, y;
+    for(k=0;k<19;k++){
+      ctx.beginPath(); ctx.moveTo(MG + k*S, MG); ctx.lineTo(MG + k*S, W-MG); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(MG, MG + k*S); ctx.lineTo(W-MG, MG + k*S); ctx.stroke();
+    }
+    ctx.lineWidth = 2.6;
+    ctx.strokeRect(MG, MG, S*18, S*18);
+    ctx.fillStyle = th.line;
+    [3,9,15].forEach(function(a){
+      [3,9,15].forEach(function(b){
+        ctx.beginPath(); ctx.arc(MG+a*S, MG+b*S, 4.5, 0, 7); ctx.fill();
+      });
+    });
+    var cs = coordSets();
+    ctx.font = "600 13px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    for(k=0;k<19;k++){
+      ctx.fillText(cs.cols[k], MG + k*S, 18);
+      ctx.fillText(cs.cols[k], MG + k*S, W - 14);
+      ctx.fillText(cs.rows[k], 17, MG + k*S);
+      ctx.fillText(cs.rows[k], W - 17, MG + k*S);
+    }
+    var grid2 = computeBoard(item.moves, item.firstColor, null);
+    for(var i=0;i<19;i++){
+      for(var j=0;j<19;j++){
+        var cell = grid2[i][j];
+        if(!cell) continue;
+        x = MG + i*S; y = MG + j*S;
+        ctx.beginPath(); ctx.arc(x, y, 17.5, 0, 7);
+        if(cell.c === "B"){
+          ctx.fillStyle = "#141414"; ctx.fill();
+        }else{
+          ctx.fillStyle = "#F5F5F0"; ctx.fill();
+          ctx.strokeStyle = "#888"; ctx.lineWidth = 1.2; ctx.stroke();
+        }
+        ctx.fillStyle = cell.c === "B" ? "#FFFFFF" : "#111111";
+        ctx.font = "700 " + (cell.num >= 100 ? 12 : 14) + "px sans-serif";
+        ctx.fillText(cell.num, x, y + 0.5);
+      }
+    }
+    cv.toBlob(function(b){ cb(b); }, "image/png");
+  }
+
+  function safeFileName(name){
+    return (name || "baduk").replace(/[\\/:*?"<>|]/g, "_").slice(0, 40);
+  }
+
+  function shareBlob(blob, filename, mime){
+    var file = null;
+    try{ file = new File([blob], filename, {type: mime}); }catch(e){}
+    if(file && navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+      navigator.share({ files:[file], title: filename }).catch(function(){});
+      return;
+    }
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 3000);
+    toast(tf("share_saved_fmt", filename));
+  }
+
+  function shareModal(item){
+    showModal(function(box, close){
+      box.innerHTML = '<h2></h2>';
+      box.querySelector("h2").textContent = t("share_title");
+      var ml = document.createElement("div"); ml.className="menulist";
+      var b1 = document.createElement("button"); b1.textContent = t("share_sgf");
+      var b2 = document.createElement("button"); b2.textContent = t("share_png");
+      var b3 = document.createElement("button"); b3.textContent = t("share_txt");
+      var b4 = document.createElement("button"); b4.textContent = t("btn_close"); b4.className="quiet";
+      b1.onclick = function(){
+        close();
+        shareBlob(new Blob([itemToSGF(item)], {type:"text/plain"}), safeFileName(item.name)+".sgf", "text/plain");
+      };
+      b2.onclick = function(){
+        close();
+        itemToPNG(item, function(b){
+          if(b) shareBlob(b, safeFileName(item.name)+".png", "image/png");
+        });
+      };
+      b3.onclick = function(){
+        close();
+        shareBlob(new Blob(["﻿"+itemToTXT(item)], {type:"text/plain"}), safeFileName(item.name)+".txt", "text/plain");
+      };
+      b4.onclick = close;
+      ml.appendChild(b1); ml.appendChild(b2); ml.appendChild(b3); ml.appendChild(b4);
+      box.appendChild(ml);
+    });
+  }
+
   /* ===================== 복습 플레이 ===================== */
   var play = null;
   var exam = null;
   var browse = null; // { item, idx }
-  var playBoard = makeBoard($("playBoardWrap"), onPlayTap);
+  var playBoard = makeBoard($("playBoardWrap"), onPlayTap, function(){ playZoom.set(null); });
   var playZoom = buildZoomSeg($("playZoom"), function(v){ playBoard.setView(v); });
-  var browseBoard = makeBoard($("browseBoardWrap"), null);
+  var browseBoard = makeBoard($("browseBoardWrap"), null, function(){ browseZoom.set(null); });
   var browseZoom = buildZoomSeg($("browseZoom"), function(v){ browseBoard.setView(v); });
 
   function startBrowse(item){
@@ -1946,7 +2276,8 @@
     }
     var playItem = { name:item.name, firstColor:item.firstColor, moves:moves };
     play = { item:playItem, srcItem:item, mode:(mode==="random"?"random":"orig"),
-             userColor:userColor, idx:0, mistakes:0, pending:null, timer:null };
+             userColor:userColor, idx:0, mistakes:0, pending:null, timer:null,
+             curMiss:0, hintOff:null };
     $("playName").textContent =
       (exam ? "[" + (exam.q+1) + "/" + exam.queue.length + "] " : "") +
       item.name + (mode==="random" ? " · " + t("random_tag") : "");
@@ -2018,14 +2349,36 @@
     playBoard.clearHint();
     if(p[0]===ans[0] && p[1]===ans[1]){
       play.idx++;
+      play.curMiss = 0;
       renderPlay();
       setStatus(t("correct"), "good");
       play.timer = setTimeout(tickPlay, 350);
     }else{
       play.mistakes++;
+      play.curMiss++;
       renderPlay();
       playBoard.flashWrong(p[0], p[1]);
       setStatus(t("wrong"), "bad");
+      if(exam && play.curMiss >= 3){
+        (function(ans2){
+          showModal(function(box, close){
+            box.innerHTML = '<h2></h2><div class="mbody mdesc"></div>';
+            box.querySelector("h2").textContent = t("reveal_title");
+            box.querySelector(".mbody").textContent = t("reveal_body");
+            var btns = document.createElement("div"); btns.className="mbtns";
+            var c1 = document.createElement("button"); c1.textContent=t("btn_cancel"); c1.onclick=close;
+            var c2 = document.createElement("button"); c2.textContent=t("btn_show"); c2.className="acc";
+            c2.onclick = function(){
+              close();
+              if(play && play.idx < play.item.moves.length){
+                playBoard.hint(ans2[0], ans2[1]);
+                setStatus(t("reveal_shown"), "good");
+              }
+            };
+            btns.appendChild(c1); btns.appendChild(c2); box.appendChild(btns);
+          });
+        })(ans);
+      }
     }
   }
   $("pPlace").addEventListener("click", confirmPlayMove);
@@ -2037,7 +2390,12 @@
     if(!play || play.idx >= play.item.moves.length) return;
     if(colorAt(play.item, play.idx) !== play.userColor){ toast(t("opp_turn_toast")); return; }
     var ans = play.item.moves[play.idx];
-    playBoard.hint(ans[0], ans[1]);
+    // 정확한 자리 대신 '범위'만 표시: 정답이 원 안에 있되 중심은 무작위로 비껴 놓음
+    if(!play.hintOff || play.hintOff.idx !== play.idx){
+      var a = Math.random() * Math.PI * 2, dist = 10 + Math.random() * 30;
+      play.hintOff = { idx: play.idx, dx: Math.cos(a)*dist, dy: Math.sin(a)*dist };
+    }
+    playBoard.hintArea(ans[0], ans[1], play.hintOff.dx, play.hintOff.dy);
     play.mistakes++;
     renderPlay();
     setStatus(t("hint_shown"), "good");
@@ -2162,6 +2520,7 @@
     document.querySelectorAll(".seg.zoom button").forEach(function(b){
       b.textContent = t("zoom_" + b.dataset.v);
     });
+    BOARDS.forEach(function(b){ b.updateLabels(); });
     var curView = !views.input.hidden ? "input" : (!views.list.hidden ? "list" : (!views.browse.hidden ? "browse" : "play"));
     $("headSub").textContent = subForView(curView);
     if(browse){ $("brHint").textContent = t("browse_hint"); renderBrowse(); }
@@ -2182,7 +2541,10 @@
   $("btnLang").addEventListener("click", function(){
     showModal(function(box, close){
       box.innerHTML = '<h2></h2>';
-      box.querySelector("h2").textContent = t("lang_title");
+      box.querySelector("h2").textContent = t("settings_title");
+
+      var l1 = document.createElement("div"); l1.className="flabel"; l1.textContent = t("lang_label");
+      box.appendChild(l1);
       var ml = document.createElement("div"); ml.className="menulist";
       ["ko","zh","ja","en"].forEach(function(lg){
         var b = document.createElement("button");
@@ -2194,20 +2556,70 @@
         };
         ml.appendChild(b);
       });
-      var bc = document.createElement("button"); bc.textContent=t("btn_close"); bc.className="quiet"; bc.onclick=close;
-      ml.appendChild(bc);
       box.appendChild(ml);
+
+      var l2 = document.createElement("div"); l2.className="flabel"; l2.textContent = t("board_label");
+      box.appendChild(l2);
+      var row = document.createElement("div"); row.className="swatchrow";
+      Object.keys(BOARD_THEMES).forEach(function(k){
+        var b = document.createElement("button");
+        b.className = "swatch" + (prefs.boardTheme === k ? " on" : "");
+        b.style.background = "linear-gradient(135deg," + BOARD_THEMES[k].bg1 + "," + BOARD_THEMES[k].bg2 + ")";
+        b.title = t("th_" + k);
+        b.setAttribute("aria-label", t("th_" + k));
+        b.onclick = function(){
+          prefs.boardTheme = k; savePrefs();
+          applyBoardTheme();
+          row.querySelectorAll(".swatch").forEach(function(x){ x.classList.remove("on"); });
+          b.classList.add("on");
+        };
+        row.appendChild(b);
+      });
+      box.appendChild(row);
+
+      var btns = document.createElement("div"); btns.className="mbtns";
+      var bc = document.createElement("button"); bc.textContent=t("btn_close"); bc.onclick=close;
+      btns.appendChild(bc);
+      box.appendChild(btns);
     });
   });
+
+  /* ===================== 샘플 명국 ===================== */
+  // 이세돌 vs AlphaGo 제4국 (2016-03-13) — 백 불계승, 78수가 '신의 한 수'
+  var SAMPLE_SGF = "(;GM[1]FF[4]CA[UTF-8]SZ[19]GN[Lee Sedol vs AlphaGo Game 4];B[pd];W[dp];B[cd];W[qp];B[op];W[oq];B[nq];W[pq];B[cn];W[fq];B[mp];W[po];B[iq];W[ec];B[hd];W[cg];B[ed];W[cj];B[dc];W[bp];B[nc];W[qi];B[ep];W[eo];B[dk];W[fp];B[ck];W[dj];B[ej];W[ei];B[fi];W[eh];B[fh];W[bj];B[fk];W[fg];B[gg];W[ff];B[gf];W[mc];B[md];W[lc];B[nb];W[id];B[hc];W[jg];B[pj];W[pi];B[oj];W[oi];B[ni];W[nh];B[mh];W[ng];B[mg];W[mi];B[nj];W[mf];B[li];W[ne];B[nd];W[mj];B[lf];W[mk];B[me];W[nf];B[lh];W[qj];B[kk];W[ik];B[ji];W[gh];B[hj];W[ge];B[he];W[fd];B[fc];W[ki];B[jj];W[lj];B[kh];W[jh];B[ml];W[nk];B[ol];W[ok];B[pk];W[pl];B[qk];W[nl];B[kj];W[ii];B[rk];W[om];B[pg];W[ql];B[cp];W[co];B[oe];W[rl];B[sk];W[rj];B[hg];W[ij];B[km];W[gi];B[fj];W[jl];B[kl];W[gl];B[fl];W[gm];B[ch];W[ee];B[eb];W[bg];B[dg];W[eg];B[en];W[fo];B[df];W[dh];B[im];W[hk];B[bn];W[if];B[gd];W[fe];B[hf];W[ih];B[bh];W[ci];B[ho];W[go];B[or];W[rg];B[dn];W[cq];B[pr];W[qr];B[rf];W[qg];B[qf];W[jc];B[gr];W[sf];B[se];W[sg];B[rd];W[bl];B[bk];W[ak];B[cl];W[hn];B[in];W[hp];B[fr];W[er];B[es];W[ds];B[ah];W[ai];B[kd];W[ie];B[kc];W[kb];B[gk];W[ib];B[qh];W[rh];B[qs];W[rs];B[oh];W[sl];B[of];W[sj];B[ni];W[nj];B[oo];W[jp])";
+
+  function loadSampleOnce(){
+    if(prefs.sampleLoaded) return;
+    prefs.sampleLoaded = true; savePrefs();
+    try{
+      var r = parseSGF(SAMPLE_SGF);
+      if(r.error || !r.moves || r.moves.length < 100) return;
+      var fname = t("sample_folder");
+      var folders = loadFolders();
+      if(folders.indexOf(fname) < 0){ folders.push(fname); saveFolders(folders); }
+      var list = loadAll();
+      list.push({
+        id: Date.now(), mtime: Date.now(),
+        name: "이세돌 vs AlphaGo 제4국 (2016)",
+        firstColor: r.firstColor, moves: r.moves, folder: fname
+      });
+      saveAll(list);
+    }catch(e){}
+  }
 
   /* ===================== 시작 ===================== */
   $("sortSel").addEventListener("change", function(){
     prefs.sort = this.value; savePrefs(); renderList();
   });
+  if(navigator.storage && navigator.storage.persist){
+    try{ navigator.storage.persist(); }catch(e){}
+  }
+  loadSampleOnce();
   applyLang();
   showView("input");
 })();
 </script>
+
 
 <script>
 if ("serviceWorker" in navigator) {

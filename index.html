@@ -57,6 +57,7 @@
   }
 
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  [hidden]{display:none !important;}
   html,body{margin:0; padding:0;}
   body{
     background:var(--bg); color:var(--ink);
@@ -187,6 +188,11 @@
   }
   .empty b{color:var(--ink);}
   .listhint{text-align:center; color:var(--muted); font-size:.75rem; padding:4px 0 0;}
+  .backup{display:flex; justify-content:center; flex-wrap:wrap; gap:8px; padding:8px 0 12px;}
+  .backup button{
+    background:var(--surface2); border:1px solid var(--line); border-radius:9px;
+    padding:9px 12px; font-size:.78rem; font-weight:600; color:var(--ink);
+  }
   .folderbar{
     display:flex; gap:6px; overflow-x:auto; padding:2px 2px 4px;
     scrollbar-width:none;
@@ -582,6 +588,8 @@
     share_saved_fmt:"파일로 저장했습니다: {0}",
     backup_saved:"백업 파일을 저장했습니다 (다운로드 폴더)",
     sample_folder:"명국",
+    coord_show:"바둑판 좌표 표시",
+    list_hint2:"브라우저의 쿠키·사이트 데이터를 삭제하면 정석도 함께 삭제됩니다. 백업 내보내기로 파일을 보관해 두세요",
     lang_title:"언어 / Language"
   },
   en: {
@@ -659,6 +667,8 @@
     share_saved_fmt:"Saved as file: {0}",
     backup_saved:"Backup file saved (Downloads folder)",
     sample_folder:"Famous games",
+    coord_show:"Show board coordinates",
+    list_hint2:"Clearing the browser's cookies & site data also deletes your joseki. Keep a backup file with Export.",
     lang_title:"Language"
   },
   ja: {
@@ -736,6 +746,8 @@
     share_saved_fmt:"ファイルに保存しました：{0}",
     backup_saved:"バックアップを保存しました（ダウンロード）",
     sample_folder:"名局",
+    coord_show:"盤面の座標を表示",
+    list_hint2:"ブラウザのCookie・サイトデータを削除すると定石も消えます。バックアップ書き出しでファイルを保管してください",
     lang_title:"言語"
   },
   zh: {
@@ -813,6 +825,8 @@
     share_saved_fmt:"已保存为文件：{0}",
     backup_saved:"备份文件已保存（下载文件夹）",
     sample_folder:"名局",
+    coord_show:"显示棋盘坐标",
+    list_hint2:"清除浏览器的Cookie和网站数据会同时删除定式。请用导出备份保存文件",
     lang_title:"语言"
   }
   };
@@ -855,9 +869,10 @@
         sort: p.sort || "new",
         lang: (L[p.lang] ? p.lang : "ko"),
         boardTheme: p.boardTheme || "wood",
-        sampleLoaded: !!p.sampleLoaded
+        sampleLoaded: !!p.sampleLoaded,
+        showCoords: p.showCoords !== false
       };
-    }catch(e){ return { folder:"all", sort:"new", lang:"ko", boardTheme:"wood", sampleLoaded:false }; }
+    }catch(e){ return { folder:"all", sort:"new", lang:"ko", boardTheme:"wood", sampleLoaded:false, showCoords:true }; }
   })();
   function savePrefs(){ localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); }
 
@@ -1182,12 +1197,26 @@
       },
       updateLabels: function(){
         gLabels.innerHTML = "";
+        if(!prefs.showCoords) return;
         var cs = coordSets();
+        // 통례: 좌표는 위(가로)와 왼쪽(세로)에만, 한자는 세로쓰기
         for(var k=0;k<19;k++){
-          var t1 = el("text",{x:px(k), y:14}); t1.textContent = cs.cols[k]; gLabels.appendChild(t1);
-          var t2 = el("text",{x:px(k), y:SIZE-6}); t2.textContent = cs.cols[k]; gLabels.appendChild(t2);
-          var t3 = el("text",{x:13, y:px(k)+3.5}); t3.textContent = cs.rows[k]; gLabels.appendChild(t3);
-          var t4 = el("text",{x:SIZE-13, y:px(k)+3.5}); t4.textContent = cs.rows[k]; gLabels.appendChild(t4);
+          var t1 = el("text",{x:px(k), y:14});
+          t1.textContent = cs.cols[k];
+          gLabels.appendChild(t1);
+          var row = cs.rows[k];
+          if(prefs.lang !== "en" && row.length > 1){
+            var tA = el("text",{x:13, y:px(k)-1, "font-size":"9"});
+            tA.textContent = row.charAt(0);
+            var tB = el("text",{x:13, y:px(k)+8, "font-size":"9"});
+            tB.textContent = row.charAt(1);
+            gLabels.appendChild(tA);
+            gLabels.appendChild(tB);
+          }else{
+            var t3 = el("text",{x:13, y:px(k)+3.5});
+            t3.textContent = row;
+            gLabels.appendChild(t3);
+          }
         }
       },
       render: function(moves, firstColor, lastIdx){
@@ -1793,6 +1822,10 @@
     hint.className = "listhint";
     hint.textContent = t("list_hint");
     box.appendChild(hint);
+    var hint2 = document.createElement("div");
+    hint2.className = "listhint";
+    hint2.textContent = t("list_hint2");
+    box.appendChild(hint2);
   }
 
   function choosePositionAndPlay(item){
@@ -2134,13 +2167,22 @@
         ctx.beginPath(); ctx.arc(MG+a*S, MG+b*S, 4.5, 0, 7); ctx.fill();
       });
     });
-    var cs = coordSets();
-    ctx.font = "600 13px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    for(k=0;k<19;k++){
-      ctx.fillText(cs.cols[k], MG + k*S, 18);
-      ctx.fillText(cs.cols[k], MG + k*S, W - 14);
-      ctx.fillText(cs.rows[k], 17, MG + k*S);
-      ctx.fillText(cs.rows[k], W - 17, MG + k*S);
+    if(prefs.showCoords){
+      var cs = coordSets();
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      for(k=0;k<19;k++){
+        ctx.font = "600 13px sans-serif";
+        ctx.fillText(cs.cols[k], MG + k*S, 18);
+        var rowLab = cs.rows[k];
+        if(prefs.lang !== "en" && rowLab.length > 1){
+          ctx.font = "600 11px sans-serif";
+          ctx.fillText(rowLab.charAt(0), 17, MG + k*S - 6);
+          ctx.fillText(rowLab.charAt(1), 17, MG + k*S + 6);
+        }else{
+          ctx.font = "600 13px sans-serif";
+          ctx.fillText(rowLab, 17, MG + k*S);
+        }
+      }
     }
     var grid2 = computeBoard(item.moves, item.firstColor, null);
     for(var i=0;i<19;i++){
@@ -2203,7 +2245,13 @@
       };
       b3.onclick = function(){
         close();
-        shareBlob(new Blob(["﻿"+itemToTXT(item)], {type:"text/plain"}), safeFileName(item.name)+".txt", "text/plain");
+        var txt = itemToTXT(item);
+        // 텍스트는 파일이 아니라 '내용' 자체를 공유 (메신저·메모 앱에 수순이 그대로 들어가도록)
+        if(navigator.share){
+          navigator.share({ title: item.name, text: txt }).catch(function(){});
+        }else{
+          shareBlob(new Blob(["﻿"+txt], {type:"text/plain"}), safeFileName(item.name)+".txt", "text/plain");
+        }
       };
       b4.onclick = close;
       ml.appendChild(b1); ml.appendChild(b2); ml.appendChild(b3); ml.appendChild(b4);
@@ -2493,7 +2541,7 @@
     document.title = t("app_title");
     document.documentElement.lang = LOCALES[prefs.lang];
     $("appTitle").textContent = t("app_title");
-    $("btnLang").textContent = "🌐 " + LANG_NAMES[prefs.lang];
+    $("btnLang").textContent = "⚙ " + t("settings_title");
     $("tabInputLbl").textContent = t("tab_input");
     $("tabReviewLbl").textContent = t("tab_review");
     var fseg = $("firstSeg").querySelectorAll("button");
@@ -2576,6 +2624,18 @@
         row.appendChild(b);
       });
       box.appendChild(row);
+
+      var ml2 = document.createElement("div"); ml2.className="menulist";
+      var ct = document.createElement("button");
+      function ctLabel(){ ct.textContent = (prefs.showCoords ? "✓ " : "") + t("coord_show"); }
+      ctLabel();
+      ct.onclick = function(){
+        prefs.showCoords = !prefs.showCoords; savePrefs();
+        BOARDS.forEach(function(b){ b.updateLabels(); });
+        ctLabel();
+      };
+      ml2.appendChild(ct);
+      box.appendChild(ml2);
 
       var btns = document.createElement("div"); btns.className="mbtns";
       var bc = document.createElement("button"); bc.textContent=t("btn_close"); bc.onclick=close;

@@ -182,6 +182,12 @@
     min-width:88px; text-align:center; font-size:.9rem; font-weight:700;
     color:var(--ink); font-variant-numeric:tabular-nums;
   }
+  .brtools{display:flex; justify-content:center; flex-wrap:wrap; gap:6px;}
+  .brtools button{
+    background:var(--surface); border:1.5px solid var(--line); border-radius:999px;
+    padding:8px 13px; font-size:.8rem; font-weight:700; color:var(--muted);
+  }
+  .brtools button.on{background:var(--accent); border-color:var(--accent); color:var(--accent-ink);}
   .browsehint{text-align:center; color:var(--muted); font-size:.78rem;}
   .empty{
     text-align:center; color:var(--muted); padding:48px 20px; font-size:.9rem;
@@ -478,6 +484,11 @@
         <button id="brNext">▶</button>
         <button id="brLast">⏭</button>
       </div>
+      <div class="brtools">
+        <button id="brFlipH" aria-pressed="false"></button>
+        <button id="brFlipV" aria-pressed="false"></button>
+        <button id="brSwap" aria-pressed="false"></button>
+      </div>
       <div class="browsehint" id="brHint"></div>
     </section>
   </main>
@@ -518,6 +529,7 @@
     app_title:"바둑정석암기", tab_input:"정석 입력", tab_review:"복습",
     sub_input:"새 정석 입력", sub_list:"저장된 정석", sub_play:"복습 중", sub_browse:"정석 살펴보기",
     browse_btn:"살펴보기", browse_hint:"버튼으로 수순을 하나씩 넘겨볼 수 있습니다", browse_all:"전체 수순",
+    br_flip_h:"↔ 좌우 대칭", br_flip_v:"↕ 상하 대칭", br_swap:"◐ 흑백 반전",
     first_black:"● 흑 선착", first_white:"○ 백 선착", moves_unit:"수",
     black:"흑", white:"백",
     editing_fmt:"「{0}」 수정 중", edit_cancel:"수정 취소", edit_canceled:"수정을 취소했습니다",
@@ -597,6 +609,7 @@
     app_title:"Baduk(Go) Joseki Trainer", tab_input:"Add Joseki", tab_review:"Review",
     sub_input:"New joseki", sub_list:"Saved joseki", sub_play:"Reviewing", sub_browse:"Viewing joseki",
     browse_btn:"View", browse_hint:"Use the buttons to step through the moves", browse_all:"All moves",
+    br_flip_h:"↔ Flip L–R", br_flip_v:"↕ Flip T–B", br_swap:"◐ Swap colors",
     first_black:"● Black first", first_white:"○ White first", moves_unit:"moves",
     black:"Black", white:"White",
     editing_fmt:"Editing “{0}”", edit_cancel:"Cancel edit", edit_canceled:"Edit canceled",
@@ -676,6 +689,7 @@
     app_title:"囲碁定石暗記", tab_input:"定石入力", tab_review:"復習",
     sub_input:"新しい定石を入力", sub_list:"保存済みの定石", sub_play:"復習中", sub_browse:"定石を見る",
     browse_btn:"見る", browse_hint:"ボタンで手順を一手ずつ送れます", browse_all:"全手順",
+    br_flip_h:"↔ 左右反転", br_flip_v:"↕ 上下反転", br_swap:"◐ 白黒反転",
     first_black:"● 黒先", first_white:"○ 白先", moves_unit:"手",
     black:"黒", white:"白",
     editing_fmt:"「{0}」を修正中", edit_cancel:"修正をやめる", edit_canceled:"修正を取り消しました",
@@ -755,6 +769,7 @@
     app_title:"围棋定式记忆", tab_input:"录入定式", tab_review:"复习",
     sub_input:"录入新定式", sub_list:"已存定式", sub_play:"复习中", sub_browse:"查看定式",
     browse_btn:"查看", browse_hint:"用按钮可逐手查看着法顺序", browse_all:"全部着法",
+    br_flip_h:"↔ 左右翻转", br_flip_v:"↕ 上下翻转", br_swap:"◐ 黑白互换",
     first_black:"● 黑先", first_white:"○ 白先", moves_unit:"手",
     black:"黑", white:"白",
     editing_fmt:"正在修改「{0}」", edit_cancel:"取消修改", edit_canceled:"已取消修改",
@@ -2269,19 +2284,41 @@
   var browseBoard = makeBoard($("browseBoardWrap"), null, function(){ browseZoom.set(null); });
   var browseZoom = buildZoomSeg($("browseZoom"), function(v){ browseBoard.setView(v); });
 
-  function startBrowse(item){
-    browse = { item:item, idx:item.moves.length };
-    $("brName").textContent = item.name;
-    var v = fitView(item.moves);
+  // 저장된 수순은 그대로 두고, 화면에 그릴 때만 대칭·흑백 반전을 적용
+  function browseMoves(){
+    var fh = browse.flipH, fv = browse.flipV;
+    return browse.item.moves.map(function(m){
+      return [fh ? 18 - m[0] : m[0], fv ? 18 - m[1] : m[1]];
+    });
+  }
+  function browseFirst(){
+    var c = browse.item.firstColor;
+    return browse.swap ? (c === "B" ? "W" : "B") : c;
+  }
+  function refitBrowse(){
+    var v = fitView(browseMoves());
     browseBoard.setView(v); browseZoom.set(v);
+  }
+  function syncBrowseTools(){
+    [["brFlipH","flipH"],["brFlipV","flipV"],["brSwap","swap"]].forEach(function(p){
+      var on = !!(browse && browse[p[1]]);
+      $(p[0]).classList.toggle("on", on);
+      $(p[0]).setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+  function startBrowse(item){
+    browse = { item:item, idx:item.moves.length, flipH:false, flipV:false, swap:false };
+    $("brName").textContent = item.name;
+    refitBrowse();
+    syncBrowseTools();
     $("brHint").textContent = t("browse_hint");
     showView("browse");
     renderBrowse();
   }
   function renderBrowse(){
     if(!browse) return;
-    var moves = browse.item.moves;
-    browseBoard.render(moves.slice(0, browse.idx), browse.item.firstColor, browse.idx-1);
+    var moves = browseMoves();
+    browseBoard.render(moves.slice(0, browse.idx), browseFirst(), browse.idx-1);
     $("brCount").textContent = (browse.idx >= moves.length)
       ? t("browse_all") : tf("prog_fmt", browse.idx, moves.length);
     $("brFirst").disabled = browse.idx <= 0;
@@ -2294,6 +2331,18 @@
   $("brNext").addEventListener("click", function(){ if(browse && browse.idx < browse.item.moves.length){ browse.idx++; renderBrowse(); } });
   $("brLast").addEventListener("click", function(){ if(browse){ browse.idx = browse.item.moves.length; renderBrowse(); } });
   $("brBack").addEventListener("click", function(){ renderList(); showView("list"); });
+  $("brFlipH").addEventListener("click", function(){
+    if(!browse) return;
+    browse.flipH = !browse.flipH; syncBrowseTools(); refitBrowse(); renderBrowse();
+  });
+  $("brFlipV").addEventListener("click", function(){
+    if(!browse) return;
+    browse.flipV = !browse.flipV; syncBrowseTools(); refitBrowse(); renderBrowse();
+  });
+  $("brSwap").addEventListener("click", function(){
+    if(!browse) return;
+    browse.swap = !browse.swap; syncBrowseTools(); renderBrowse();
+  });
 
   var TC = 18;
   var TRANSFORMS = [
@@ -2562,6 +2611,9 @@
     $("btnImport").textContent = t("backup_import");
     $("btnBack").textContent = t("back_btn");
     $("brBack").textContent = t("back_btn");
+    $("brFlipH").textContent = t("br_flip_h");
+    $("brFlipV").textContent = t("br_flip_v");
+    $("brSwap").textContent = t("br_swap");
     $("btnHint").textContent = t("hint_btn");
     $("sortSel").querySelectorAll("option").forEach(function(o){
       o.textContent = t("sort_" + o.value);
@@ -2689,6 +2741,7 @@
   showView("input");
 })();
 </script>
+
 
 
 <script>

@@ -1,4 +1,4 @@
-var CACHE = "joseki-v8";
+var CACHE = "joseki-v9";
 var PRECACHE = [
   "./",
   "./index.html",

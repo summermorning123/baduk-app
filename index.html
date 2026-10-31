@@ -182,10 +182,11 @@
     min-width:88px; text-align:center; font-size:.9rem; font-weight:700;
     color:var(--ink); font-variant-numeric:tabular-nums;
   }
-  .brtools{display:flex; justify-content:center; flex-wrap:wrap; gap:6px;}
+  .brtools{display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:5px;}
   .brtools button{
     background:var(--surface); border:1.5px solid var(--line); border-radius:999px;
-    padding:8px 13px; font-size:.8rem; font-weight:700; color:var(--muted);
+    padding:7px 2px; font-size:.72rem; font-weight:700; color:var(--muted);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   }
   .brtools button.on{background:var(--accent); border-color:var(--accent); color:var(--accent-ink);}
   .browsehint{text-align:center; color:var(--muted); font-size:.78rem;}
@@ -488,6 +489,7 @@
         <button id="brFlipH" aria-pressed="false"></button>
         <button id="brFlipV" aria-pressed="false"></button>
         <button id="brSwap" aria-pressed="false"></button>
+        <button id="brNums" aria-pressed="true"></button>
       </div>
       <div class="browsehint" id="brHint"></div>
     </section>
@@ -529,7 +531,7 @@
     app_title:"바둑정석암기", tab_input:"정석 입력", tab_review:"복습",
     sub_input:"새 정석 입력", sub_list:"저장된 정석", sub_play:"복습 중", sub_browse:"정석 살펴보기",
     browse_btn:"살펴보기", browse_hint:"버튼으로 수순을 하나씩 넘겨볼 수 있습니다", browse_all:"전체 수순",
-    br_flip_h:"↔ 좌우 대칭", br_flip_v:"↕ 상하 대칭", br_swap:"◐ 흑백 반전",
+    br_flip_h:"↔ 좌우 대칭", br_flip_v:"↕ 상하 대칭", br_swap:"◐ 흑백 반전", br_nums:"① 수순 표시",
     first_black:"● 흑 선착", first_white:"○ 백 선착", moves_unit:"수",
     black:"흑", white:"백",
     editing_fmt:"「{0}」 수정 중", edit_cancel:"수정 취소", edit_canceled:"수정을 취소했습니다",
@@ -609,7 +611,7 @@
     app_title:"Baduk(Go) Joseki Trainer", tab_input:"Add Joseki", tab_review:"Review",
     sub_input:"New joseki", sub_list:"Saved joseki", sub_play:"Reviewing", sub_browse:"Viewing joseki",
     browse_btn:"View", browse_hint:"Use the buttons to step through the moves", browse_all:"All moves",
-    br_flip_h:"↔ Flip L–R", br_flip_v:"↕ Flip T–B", br_swap:"◐ Swap colors",
+    br_flip_h:"↔ Flip L–R", br_flip_v:"↕ Flip T–B", br_swap:"◐ B/W swap", br_nums:"① Numbers",
     first_black:"● Black first", first_white:"○ White first", moves_unit:"moves",
     black:"Black", white:"White",
     editing_fmt:"Editing “{0}”", edit_cancel:"Cancel edit", edit_canceled:"Edit canceled",
@@ -689,7 +691,7 @@
     app_title:"囲碁定石暗記", tab_input:"定石入力", tab_review:"復習",
     sub_input:"新しい定石を入力", sub_list:"保存済みの定石", sub_play:"復習中", sub_browse:"定石を見る",
     browse_btn:"見る", browse_hint:"ボタンで手順を一手ずつ送れます", browse_all:"全手順",
-    br_flip_h:"↔ 左右反転", br_flip_v:"↕ 上下反転", br_swap:"◐ 白黒反転",
+    br_flip_h:"↔ 左右反転", br_flip_v:"↕ 上下反転", br_swap:"◐ 白黒反転", br_nums:"① 手順番号",
     first_black:"● 黒先", first_white:"○ 白先", moves_unit:"手",
     black:"黒", white:"白",
     editing_fmt:"「{0}」を修正中", edit_cancel:"修正をやめる", edit_canceled:"修正を取り消しました",
@@ -769,7 +771,7 @@
     app_title:"围棋定式记忆", tab_input:"录入定式", tab_review:"复习",
     sub_input:"录入新定式", sub_list:"已存定式", sub_play:"复习中", sub_browse:"查看定式",
     browse_btn:"查看", browse_hint:"用按钮可逐手查看着法顺序", browse_all:"全部着法",
-    br_flip_h:"↔ 左右翻转", br_flip_v:"↕ 上下翻转", br_swap:"◐ 黑白互换",
+    br_flip_h:"↔ 左右翻转", br_flip_v:"↕ 上下翻转", br_swap:"◐ 黑白互换", br_nums:"① 着手序号",
     first_black:"● 黑先", first_white:"○ 白先", moves_unit:"手",
     black:"黑", white:"白",
     editing_fmt:"正在修改「{0}」", edit_cancel:"取消修改", edit_canceled:"已取消修改",
@@ -2308,6 +2310,16 @@
       $(p[0]).classList.toggle("on", on);
       $(p[0]).setAttribute("aria-pressed", on ? "true" : "false");
     });
+    // 수순 번호는 설정의 '수순 번호 표시'와 같은 값을 공유
+    $("brNums").classList.toggle("on", !!prefs.showNums);
+    $("brNums").setAttribute("aria-pressed", prefs.showNums ? "true" : "false");
+  }
+  function toggleShowNums(){
+    prefs.showNums = !prefs.showNums; savePrefs();
+    renderInput();
+    if(play) renderPlay();
+    if(browse) renderBrowse();
+    syncBrowseTools();
   }
   function startBrowse(item){
     browse = { item:item, idx:item.moves.length, flipH:false, flipV:false, swap:false };
@@ -2346,6 +2358,7 @@
     if(!browse) return;
     browse.swap = !browse.swap; syncBrowseTools(); renderBrowse();
   });
+  $("brNums").addEventListener("click", toggleShowNums);
 
   var TC = 18;
   var TRANSFORMS = [
@@ -2617,6 +2630,7 @@
     $("brFlipH").textContent = t("br_flip_h");
     $("brFlipV").textContent = t("br_flip_v");
     $("brSwap").textContent = t("br_swap");
+    $("brNums").textContent = t("br_nums");
     $("btnHint").textContent = t("hint_btn");
     $("sortSel").querySelectorAll("option").forEach(function(o){
       o.textContent = t("sort_" + o.value);
@@ -2695,10 +2709,7 @@
       function ntLabel(){ nt.textContent = (prefs.showNums ? "✓ " : "") + t("nums_show"); }
       ntLabel();
       nt.onclick = function(){
-        prefs.showNums = !prefs.showNums; savePrefs();
-        renderInput();
-        if(play) renderPlay();
-        if(browse) renderBrowse();
+        toggleShowNums();
         ntLabel();
       };
       ml2.appendChild(nt);

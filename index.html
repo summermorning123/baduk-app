@@ -601,7 +601,7 @@
     share_saved_fmt:"파일로 저장했습니다: {0}",
     backup_saved:"백업 파일을 저장했습니다 (다운로드 폴더)",
     sample_folder:"명국",
-    coord_show:"바둑판 좌표 표시",
+    coord_show:"바둑판 좌표 표시", nums_show:"수순 번호 표시",
     list_hint2:"브라우저의 쿠키·사이트 데이터를 삭제하면 정석도 함께 삭제됩니다.\n백업 내보내기로 파일을 보관해 두세요",
     lang_title:"언어 / Language"
   },
@@ -681,7 +681,7 @@
     share_saved_fmt:"Saved as file: {0}",
     backup_saved:"Backup file saved (Downloads folder)",
     sample_folder:"Famous games",
-    coord_show:"Show board coordinates",
+    coord_show:"Show board coordinates", nums_show:"Show move numbers",
     list_hint2:"Clearing the browser's cookies & site data also deletes your joseki.\nKeep a backup file with Export.",
     lang_title:"Language"
   },
@@ -761,7 +761,7 @@
     share_saved_fmt:"ファイルに保存しました：{0}",
     backup_saved:"バックアップを保存しました（ダウンロード）",
     sample_folder:"名局",
-    coord_show:"盤面の座標を表示",
+    coord_show:"盤面の座標を表示", nums_show:"手順番号を表示",
     list_hint2:"ブラウザのCookie・サイトデータを削除すると定石も消えます。\nバックアップ書き出しでファイルを保管してください",
     lang_title:"言語"
   },
@@ -841,7 +841,7 @@
     share_saved_fmt:"已保存为文件：{0}",
     backup_saved:"备份文件已保存（下载文件夹）",
     sample_folder:"名局",
-    coord_show:"显示棋盘坐标",
+    coord_show:"显示棋盘坐标", nums_show:"显示着手序号",
     list_hint2:"清除浏览器的Cookie和网站数据会同时删除定式。\n请用导出备份保存文件",
     lang_title:"语言"
   }
@@ -886,9 +886,10 @@
         lang: (L[p.lang] ? p.lang : "ko"),
         boardTheme: p.boardTheme || "wood",
         sampleLoaded: !!p.sampleLoaded,
-        showCoords: p.showCoords !== false
+        showCoords: p.showCoords !== false,
+        showNums: p.showNums !== false
       };
-    }catch(e){ return { folder:"all", sort:"new", lang:"ko", boardTheme:"wood", sampleLoaded:false, showCoords:true }; }
+    }catch(e){ return { folder:"all", sort:"new", lang:"ko", boardTheme:"wood", sampleLoaded:false, showCoords:true, showNums:true }; }
   })();
   function savePrefs(){ localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); }
 
@@ -1241,7 +1242,7 @@
         for(var x=0;x<19;x++){
           for(var y=0;y<19;y++){
             var cell = grid2[x][y];
-            if(cell) gStones.appendChild(stoneG(x, y, cell.c, cell.num));
+            if(cell) gStones.appendChild(stoneG(x, y, cell.c, prefs.showNums ? cell.num : null));
           }
         }
         if(lastIdx != null && lastIdx >= 0 && lastIdx < moves.length){
@@ -2213,9 +2214,11 @@
           ctx.fillStyle = "#F5F5F0"; ctx.fill();
           ctx.strokeStyle = "#888"; ctx.lineWidth = 1.2; ctx.stroke();
         }
-        ctx.fillStyle = cell.c === "B" ? "#FFFFFF" : "#111111";
-        ctx.font = "700 " + (cell.num >= 100 ? 12 : 14) + "px sans-serif";
-        ctx.fillText(cell.num, x, y + 0.5);
+        if(prefs.showNums){
+          ctx.fillStyle = cell.c === "B" ? "#FFFFFF" : "#111111";
+          ctx.font = "700 " + (cell.num >= 100 ? 12 : 14) + "px sans-serif";
+          ctx.fillText(cell.num, x, y + 0.5);
+        }
       }
     }
     cv.toBlob(function(b){ cb(b); }, "image/png");
@@ -2688,6 +2691,17 @@
         ctLabel();
       };
       ml2.appendChild(ct);
+      var nt = document.createElement("button");
+      function ntLabel(){ nt.textContent = (prefs.showNums ? "✓ " : "") + t("nums_show"); }
+      ntLabel();
+      nt.onclick = function(){
+        prefs.showNums = !prefs.showNums; savePrefs();
+        renderInput();
+        if(play) renderPlay();
+        if(browse) renderBrowse();
+        ntLabel();
+      };
+      ml2.appendChild(nt);
       box.appendChild(ml2);
 
       var btns = document.createElement("div"); btns.className="mbtns";
